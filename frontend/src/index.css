@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1e1e1e;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #424242;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555555;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-vscode-accent hover:bg-vscode-accent-hover text-white font-medium
+      px-4 py-2 rounded transition-colors duration-150 disabled:opacity-50
+      disabled:cursor-not-allowed flex items-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply bg-vscode-input hover:bg-vscode-active text-vscode-text font-medium
+      px-4 py-2 rounded border border-vscode-border transition-colors
+      duration-150 flex items-center gap-2;
+  }
+
+  .input-field {
+    @apply bg-vscode-input border border-vscode-input-border text-vscode-text
+      rounded px-3 py-2 focus:outline-none focus:border-vscode-accent
+      transition-colors duration-150 placeholder:text-vscode-text-muted;
+  }
+
+  .panel {
+    @apply bg-vscode-sidebar border border-vscode-border rounded-lg;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm
+      bg-vscode-input border border-vscode-border text-vscode-text
+      hover:border-vscode-accent transition-colors duration-150 cursor-pointer;
+  }
+
+  .chip-active {
+    @apply bg-vscode-accent/20 border-vscode-accent text-vscode-accent;
+  }
+
+  .provider-tab {
+    @apply px-4 py-2 text-sm font-medium rounded-t transition-colors duration-150
+      cursor-pointer border-b-2;
+  }
+
+  .provider-tab-active {
+    @apply border-vscode-accent text-white bg-vscode-active;
+  }
+
+  .provider-tab-inactive {
+    @apply border-transparent text-vscode-text-muted hover:text-vscode-text
+      hover:bg-vscode-active/50;
+  }
+
+  /* Loading spinner */
+  @keyframes spin-slow {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 2s linear infinite;
+  }
+
+  /* Slide-in animation */
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .animate-slide-in {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  /* Fade in animation */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+}
