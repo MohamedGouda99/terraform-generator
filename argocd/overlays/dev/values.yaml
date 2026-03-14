@@ -1,0 +1,65 @@
+# -- Dev environment overrides
+backend:
+  replicaCount: 1
+
+  image:
+    tag: "dev-latest"
+
+  config:
+    OPENAI_MODEL: "gpt-4o-mini"
+    TERRAFORM_BINARY_PATH: "/shared/terraform/terraform"
+    CORS_ORIGINS: '["https://dev.terraform-generator.example.com", "http://localhost:3000"]'
+    MAX_GENERATION_TOKENS: "4096"
+    LOG_LEVEL: "DEBUG"
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  autoscaling:
+    enabled: false
+
+  podDisruptionBudget:
+    enabled: false
+
+  topologySpreadConstraints:
+    enabled: false
+
+frontend:
+  replicaCount: 1
+
+  image:
+    tag: "dev-latest"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+  topologySpreadConstraints:
+    enabled: false
+
+ingress:
+  hosts:
+    - host: dev.terraform-generator.example.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls:
+    - secretName: terraform-generator-dev-tls
+      hosts:
+        - dev.terraform-generator.example.com
+
+networkPolicy:
+  enabled: false

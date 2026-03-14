@@ -1,0 +1,159 @@
+# -- Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# -- Namespace override (defaults to Release namespace)
+namespaceOverride: ""
+
+# -- Backend configuration
+backend:
+  replicaCount: 2
+
+  image:
+    repository: terraform-generator-backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8000
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+  # -- Environment variables from ConfigMap
+  config:
+    OPENAI_MODEL: "gpt-4o-mini"
+    TERRAFORM_BINARY_PATH: "/shared/terraform/terraform"
+    CORS_ORIGINS: '["https://terraform-generator.example.com"]'
+    MAX_GENERATION_TOKENS: "4096"
+    LOG_LEVEL: "INFO"
+
+  # -- Sensitive environment variables
+  secret:
+    # For production, use existingSecret or External Secrets Operator
+    OPENAI_API_KEY: "REPLACE_ME"
+
+  # -- Use an existing secret instead of creating one
+  existingSecret: ""
+
+  # -- Init container to install Terraform binary
+  terraform:
+    version: "1.9.8"
+    image:
+      repository: alpine
+      tag: "3.20"
+
+  probes:
+    readiness:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    liveness:
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 3
+    startup:
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 5
+      failureThreshold: 12
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  topologySpreadConstraints:
+    enabled: true
+
+# -- Frontend configuration
+frontend:
+  replicaCount: 2
+
+  image:
+    repository: terraform-generator-frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 80
+
+  topologySpreadConstraints:
+    enabled: true
+
+# -- Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: terraform-generator.example.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls:
+    - secretName: terraform-generator-tls
+      hosts:
+        - terraform-generator.example.com
+
+# -- Network policies
+networkPolicy:
+  enabled: true
+  ingressNamespace: ingress-nginx
+
+# -- Service account
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  labels: {}
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity
+affinity: {}

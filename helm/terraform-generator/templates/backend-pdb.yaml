@@ -1,0 +1,14 @@
+{{- if .Values.backend.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "terraform-generator.fullname" . }}-backend
+  namespace: {{ include "terraform-generator.namespace" . }}
+  labels:
+    {{- include "terraform-generator.backend.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.backend.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "terraform-generator.backend.selectorLabels" . | nindent 6 }}
+{{- end }}

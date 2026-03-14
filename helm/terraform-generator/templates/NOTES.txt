@@ -1,0 +1,39 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named: {{ .Release.Name }}
+Namespace: {{ include "terraform-generator.namespace" . }}
+
+{{- if .Values.ingress.enabled }}
+
+The application is accessible via Ingress:
+{{- range .Values.ingress.hosts }}
+  https://{{ .host }}
+{{- end }}
+
+{{- else }}
+
+To access the application, run:
+
+  # Frontend
+  kubectl port-forward -n {{ include "terraform-generator.namespace" . }} \
+    svc/{{ include "terraform-generator.fullname" . }}-frontend 8080:{{ .Values.frontend.service.port }}
+
+  # Backend API
+  kubectl port-forward -n {{ include "terraform-generator.namespace" . }} \
+    svc/{{ include "terraform-generator.fullname" . }}-backend 8000:{{ .Values.backend.service.port }}
+
+Then open http://localhost:8080 in your browser.
+{{- end }}
+
+To check deployment status:
+  kubectl get pods -n {{ include "terraform-generator.namespace" . }} -l "app.kubernetes.io/part-of={{ include "terraform-generator.name" . }}"
+
+IMPORTANT: Make sure you have set the OPENAI_API_KEY secret.
+{{- if not .Values.backend.existingSecret }}
+  The chart created a secret with a placeholder value.
+  Update it with:
+    kubectl create secret generic {{ include "terraform-generator.fullname" . }}-backend-secret \
+      --from-literal=OPENAI_API_KEY=<your-key> \
+      -n {{ include "terraform-generator.namespace" . }} \
+      --dry-run=client -o yaml | kubectl apply -f -
+{{- end }}

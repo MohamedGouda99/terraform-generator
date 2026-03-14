@@ -1,0 +1,78 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: terraform-generator
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: terraform-generator
+    app.kubernetes.io/part-of: terraform-generator
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: terraform-generator-dev
+            targetRevision: develop
+            autoSync: true
+            selfHeal: true
+            prune: true
+          - env: staging
+            namespace: terraform-generator-staging
+            targetRevision: staging
+            autoSync: true
+            selfHeal: true
+            prune: true
+          - env: prod
+            namespace: terraform-generator-prod
+            targetRevision: main
+            autoSync: false
+            selfHeal: true
+            prune: false
+  template:
+    metadata:
+      name: "terraform-generator-{{ .env }}"
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: terraform-generator
+        app.kubernetes.io/part-of: terraform-generator
+        app.kubernetes.io/env: "{{ .env }}"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: terraform-generator
+      source:
+        repoURL: https://github.com/example/terraform-generator.git
+        targetRevision: "{{ .targetRevision }}"
+        path: helm/terraform-generator
+        helm:
+          releaseName: "terraform-generator-{{ .env }}"
+          valueFiles:
+            - values.yaml
+            - "../../argocd/overlays/{{ .env }}/values.yaml"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{ .namespace }}"
+      syncPolicy:
+        automated:
+          prune: "{{ .prune }}"
+          selfHeal: "{{ .selfHeal }}"
+          allowEmpty: false
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true
+          - ServerSideApply=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas
+      revisionHistoryLimit: 10

@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: terraform-generator
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: terraform-generator
+    app.kubernetes.io/part-of: terraform-generator
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: terraform-generator
+  source:
+    repoURL: https://github.com/example/terraform-generator.git
+    targetRevision: main
+    path: helm/terraform-generator
+    helm:
+      releaseName: terraform-generator
+      valueFiles:
+        - values.yaml
+        - ../../argocd/overlays/prod/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: terraform-generator
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+  revisionHistoryLimit: 10

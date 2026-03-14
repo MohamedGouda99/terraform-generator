@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: terraform-generator
+  labels:
+    app.kubernetes.io/name: terraform-generator
+    app.kubernetes.io/part-of: terraform-generator

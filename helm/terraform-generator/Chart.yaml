@@ -1,0 +1,17 @@
+apiVersion: v2
+name: terraform-generator
+description: AI-Powered Terraform Code Generator — FastAPI backend with React frontend
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - terraform
+  - ai
+  - code-generator
+  - fastapi
+  - react
+maintainers:
+  - name: DevOps Team
+home: https://github.com/example/terraform-generator
+sources:
+  - https://github.com/example/terraform-generator

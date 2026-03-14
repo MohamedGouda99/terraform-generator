@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "terraform-generator.fullname" . }}-frontend
+  namespace: {{ include "terraform-generator.namespace" . }}
+  labels:
+    {{- include "terraform-generator.frontend.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.frontend.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.frontend.service.port }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    {{- include "terraform-generator.frontend.selectorLabels" . | nindent 4 }}

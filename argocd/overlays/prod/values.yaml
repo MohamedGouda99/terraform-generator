@@ -1,0 +1,80 @@
+# -- Production environment overrides
+backend:
+  replicaCount: 3
+
+  image:
+    tag: "1.0.0"
+
+  config:
+    OPENAI_MODEL: "gpt-4o-mini"
+    TERRAFORM_BINARY_PATH: "/shared/terraform/terraform"
+    CORS_ORIGINS: '["https://terraform-generator.example.com"]'
+    MAX_GENERATION_TOKENS: "4096"
+    LOG_LEVEL: "WARN"
+
+  # Use External Secrets Operator in production
+  existingSecret: "terraform-generator-prod-secrets"
+
+  resources:
+    requests:
+      cpu: "1"
+      memory: 512Mi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+  topologySpreadConstraints:
+    enabled: true
+
+frontend:
+  replicaCount: 3
+
+  image:
+    tag: "1.0.0"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+  topologySpreadConstraints:
+    enabled: true
+
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: terraform-generator.example.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls:
+    - secretName: terraform-generator-prod-tls
+      hosts:
+        - terraform-generator.example.com
+
+networkPolicy:
+  enabled: true

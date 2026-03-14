@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: terraform-generator
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: AI-Powered Terraform Code Generator project
+  sourceRepos:
+    - "https://github.com/example/terraform-generator.git"
+  destinations:
+    - namespace: terraform-generator
+      server: https://kubernetes.default.svc
+    - namespace: terraform-generator-dev
+      server: https://kubernetes.default.svc
+    - namespace: terraform-generator-staging
+      server: https://kubernetes.default.svc
+    - namespace: terraform-generator-prod
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: "*"
+    - group: apps
+      kind: "*"
+    - group: autoscaling
+      kind: "*"
+    - group: networking.k8s.io
+      kind: "*"
+    - group: policy
+      kind: "*"
+  orphanedResources:
+    warn: true
+  roles:
+    - name: developer
+      description: Developer access to terraform-generator
+      policies:
+        - p, proj:terraform-generator:developer, applications, get, terraform-generator/*, allow
+        - p, proj:terraform-generator:developer, applications, sync, terraform-generator/*, allow
+      groups:
+        - terraform-generator-devs
+    - name: admin
+      description: Admin access to terraform-generator
+      policies:
+        - p, proj:terraform-generator:admin, applications, *, terraform-generator/*, allow
+      groups:
+        - terraform-generator-admins

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "terraform-generator.fullname" . }}-backend-config
+  namespace: {{ include "terraform-generator.namespace" . }}
+  labels:
+    {{- include "terraform-generator.backend.labels" . | nindent 4 }}
+data:
+  {{- range $key, $val := .Values.backend.config }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
