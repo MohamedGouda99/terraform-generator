@@ -5,7 +5,7 @@ A web application that converts plain English infrastructure descriptions into p
 ## Architecture
 
 ```mermaid
-flowchart LR
+graph TB
     A[User Description] --> B[FastAPI Backend]
     B --> C[LangChain / OpenAI]
     C --> D[Terraform Code]
@@ -13,18 +13,21 @@ flowchart LR
     E --> F[Monaco Editor]
     F --> G[Download .zip]
 
-    subgraph Kubernetes Cluster
+    subgraph K8S[Kubernetes Cluster]
         H[Ingress Controller] --> I[Frontend Pod]
         H --> J[Backend Pod]
-        J --> K[Init Container\nTerraform Binary]
+        J --> K[Init Container - Terraform Binary]
     end
 
-    subgraph GitOps
+    subgraph GITOPS[GitOps]
         L[Git Push] --> M[ArgoCD]
         M --> N[Helm Chart]
-        N --> Kubernetes Cluster
+        N --> H
         M --> O[Dev / Staging / Prod]
     end
+
+    style K8S fill:#326CE5,color:#fff,stroke:#326CE5
+    style GITOPS fill:#EF7B4D,color:#fff,stroke:#EF7B4D
 ```
 
 ## Features
